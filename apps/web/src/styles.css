@@ -366,8 +366,13 @@ body {
   margin: 0 0 1rem;
 }
 
+.prose a,
 .prose code {
   color: var(--amber);
+}
+
+.prose a {
+  overflow-wrap: anywhere;
 }
 
 .route-list {

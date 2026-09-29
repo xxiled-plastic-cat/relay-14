@@ -13,6 +13,10 @@ export function DocsPage() {
           Scheme <code>exact-native</code>. Network <code>litvm-testnet</code>. Asset zkLTC, 18
           decimals.
         </p>
+        <p>
+          Facilitator{" "}
+          <a href="https://relay-14-facilitator.compx.io">https://relay-14-facilitator.compx.io</a>
+        </p>
         <ul className="route-list">
           <li>
             <code>GET /supported</code> — schemes this facilitator accepts
