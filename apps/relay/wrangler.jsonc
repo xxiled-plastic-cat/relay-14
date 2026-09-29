@@ -4,6 +4,12 @@
   "compatibility_date": "2026-09-29",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "relay-14.compx.io",
+      "custom_domain": true
+    }
+  ],
   "vars": {
     "CHAIN_ID": "4441",
     "RPC_URL": "https://liteforge.rpc.caldera.xyz/http",
@@ -13,7 +19,7 @@
     {
       "binding": "RELAY14",
       "database_name": "relay-14",
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_id": "eb5d0d0b-5bc2-4716-8bed-0931f91ce64c",
       "migrations_dir": "migrations"
     }
   ]

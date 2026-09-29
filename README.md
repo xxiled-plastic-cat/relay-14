@@ -81,7 +81,7 @@ Point the demo at the deployed facilitator by setting `FACILITATOR_URL` in [`app
 pnpm --filter @relay-14/demo deploy
 ```
 
-Chain settings live in the facilitator `vars` block of `wrangler.jsonc`: `CHAIN_ID`, `RPC_URL`, and `NETWORK`. Pointing those at another network later is a config change. The Worker still has no key. Deploy publishes each Worker to `workers.dev`.
+Chain settings live in the facilitator `vars` block of `wrangler.jsonc`: `CHAIN_ID`, `RPC_URL`, and `NETWORK`. Pointing those at another network later is a config change. The Worker still has no key. Deploy publishes the facilitator to `relay-14.compx.io` and to `workers.dev`.
 
 ## Out of scope for v1
 
