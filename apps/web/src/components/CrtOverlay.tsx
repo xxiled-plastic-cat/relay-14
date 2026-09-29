@@ -1,9 +1,17 @@
 import { motion } from "framer-motion";
 
-export function CrtOverlay({ reduced, play }: { reduced: boolean; play: boolean }) {
+export function CrtOverlay({
+  reduced,
+  play,
+  boot = true,
+}: {
+  reduced: boolean;
+  play: boolean;
+  boot?: boolean;
+}) {
   return (
     <>
-      {play && !reduced ? (
+      {boot && play && !reduced ? (
         <motion.div
           className="power-on"
           aria-hidden="true"

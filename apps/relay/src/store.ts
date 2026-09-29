@@ -39,6 +39,7 @@ type SqlValue = string | number | null;
 
 type BoundStatement = {
   first<T>(): Promise<T | null>;
+  all<T>(): Promise<{ results: T[] }>;
   run(): Promise<unknown>;
 };
 
@@ -118,6 +119,50 @@ export function createD1PaymentStore(db: RelayDatabase): PaymentStore {
         .run();
     },
   };
+}
+
+export type SettledPayment = {
+  txHash: string;
+  payer: string;
+  payTo: string;
+  amountWei: string;
+  settledAt: string | null;
+  blockNumber: number | null;
+};
+
+const LIST_CAP = 50;
+
+type DbSettled = {
+  tx_hash: string;
+  payer: string;
+  pay_to: string;
+  amount_wei: string;
+  settled_at: string | null;
+  block_number: number | null;
+};
+
+/** Newest settled payments. Not part of PaymentStore; verify and settle do not call it. */
+export async function listSettledPayments(db: RelayDatabase, limit = LIST_CAP): Promise<SettledPayment[]> {
+  const capped = Math.min(LIST_CAP, Math.max(1, Math.floor(limit)));
+  const result = await db
+    .prepare(
+      `SELECT tx_hash, payer, pay_to, amount_wei, settled_at, block_number
+       FROM payments
+       WHERE status = 'settled'
+       ORDER BY settled_at DESC
+       LIMIT ?`,
+    )
+    .bind(capped)
+    .all<DbSettled>();
+
+  return result.results.map((row) => ({
+    txHash: row.tx_hash,
+    payer: row.payer,
+    payTo: row.pay_to,
+    amountWei: row.amount_wei,
+    settledAt: row.settled_at,
+    blockNumber: row.block_number,
+  }));
 }
 
 function fromDb(row: DbPayment): PaymentRow {

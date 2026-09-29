@@ -2,7 +2,7 @@ import { InvalidReason, SCHEME, X402_VERSION } from "@relay-14/shared";
 import { Hono } from "hono";
 import { createRelay14PublicClient, createViemChainReader } from "./chain.js";
 import { createViemSettlementClient, settleExactNativePayment } from "./settle.js";
-import { createD1PaymentStore, type RelayDatabase } from "./store.js";
+import { createD1PaymentStore, listSettledPayments, type RelayDatabase } from "./store.js";
 import { verifyExactNativePayment } from "./verify.js";
 
 export type Relay14Env = {
@@ -13,6 +13,12 @@ export type Relay14Env = {
 };
 
 const app = new Hono<{ Bindings: Relay14Env }>();
+
+app.get("/transactions", async (c) => {
+  c.header("Access-Control-Allow-Origin", "*");
+  const transactions = await listSettledPayments(c.env.RELAY14, 50);
+  return c.json({ transactions });
+});
 
 app.get("/supported", (c) => {
   return c.json([

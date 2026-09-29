@@ -8,9 +8,9 @@ The payment scheme is `exact-native` on network `litvm-testnet` (chain id 4441).
 
 | Path | Name | Role |
 | --- | --- | --- |
-| `apps/relay` | Worker `relay-14`, package `@relay-14/relay` | Facilitator: `/supported`, `/verify`, `/settle`, `/health` |
+| `apps/relay` | Worker `relay-14`, package `@relay-14/relay` | Facilitator: `/supported`, `/verify`, `/settle`, `/health`, `/transactions` |
 | `apps/demo` | Worker `relay-14-demo`, package `@relay-14/demo` | Paid `GET /fortune` for 0.0001 zkLTC |
-| `apps/web` | `@relay-14/web` | Landing page |
+| `apps/web` | `@relay-14/web` | Landing page, `/docs`, and `/txns` |
 | `packages/shared` | `@relay-14/shared` | Chain config, payment types, header codec |
 | `packages/client` | `@relay-14/client` | Signs a transfer and retries once after a 402 |
 | `packages/middleware` | `@relay-14/middleware` | Hono middleware that returns 402 and calls Relay-14 |
@@ -46,7 +46,7 @@ The landing page is a separate Vite app:
 pnpm --filter @relay-14/web dev
 ```
 
-It serves at `http://127.0.0.1:5173`.
+It serves at `http://127.0.0.1:5173`. `/docs` is a short description of the facilitator. `/txns` lists settled payments from the facilitator database, so the facilitator has to be running. Each row opens the LiteForge testnet explorer.
 
 Run the verify tests:
 

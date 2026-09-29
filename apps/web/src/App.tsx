@@ -6,6 +6,14 @@ import { CrtOverlay } from "./components/CrtOverlay";
 import { Subtitle } from "./components/Subtitle";
 import { Wordmark } from "./components/Wordmark";
 import { boot } from "./lib/motion";
+import { DocsPage } from "./pages/DocsPage";
+import { NotFoundPage } from "./pages/NotFoundPage";
+import { TxnsPage } from "./pages/TxnsPage";
+
+function currentPath(): string {
+  const path = window.location.pathname.replace(/\/+$/, "");
+  return path.length > 0 ? path : "/";
+}
 
 function useFontsReady(): boolean {
   const [ready, setReady] = useState(false);
@@ -60,30 +68,38 @@ function Stage({ reduced, play }: { reduced: boolean; play: boolean }) {
       <Wordmark reduced={reduced} play={play} />
       <Subtitle reduced={reduced} play={play} />
       <div className="actions">
-        <AsciiButton href="#docs" label="DOCS" reduced={reduced} play={play} />
-        <AsciiButton href="#txns" label="TXNS" reduced={reduced} play={play} />
+        <AsciiButton href="/docs" label="DOCS" reduced={reduced} play={play} />
+        <AsciiButton href="/txns" label="TXNS" reduced={reduced} play={play} />
       </div>
     </motion.main>
   );
 }
 
+function Inner({ path }: { path: string }) {
+  if (path === "/docs") return <DocsPage />;
+  if (path === "/txns") return <TxnsPage />;
+  return <NotFoundPage />;
+}
+
 export function App() {
   const reduced = useReducedMotion() === true;
   const fontsReady = useFontsReady();
-  const play = fontsReady;
+  const path = currentPath();
+  const home = path === "/";
+  const play = home ? fontsReady : true;
 
   return (
     <>
-      <CrtOverlay reduced={reduced} play={play} />
+      <CrtOverlay reduced={reduced} play={play} boot={home} />
       <motion.div
         className="page"
         initial={{ opacity: 0 }}
         animate={{ opacity: play ? 1 : 0 }}
-        transition={{ duration: reduced ? 0 : 0.22 }}
+        transition={{ duration: reduced || !home ? 0 : 0.22 }}
       >
-        <AsciiRail side="left" reduced={reduced} play={play} />
-        <Stage reduced={reduced} play={play} />
-        <AsciiRail side="right" reduced={reduced} play={play} />
+        <AsciiRail side="left" reduced={reduced || !home} play={play} />
+        {home ? <Stage reduced={reduced} play={play} /> : <Inner path={path} />}
+        <AsciiRail side="right" reduced={reduced || !home} play={play} />
       </motion.div>
     </>
   );

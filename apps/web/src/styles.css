@@ -304,6 +304,137 @@ body {
   }
 }
 
+.stage.stage-page {
+  align-items: stretch;
+  justify-content: flex-start;
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+  padding: 4vh 4vw 8vh;
+  gap: 1.5rem;
+}
+
+.page-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.home-mark {
+  color: var(--amber);
+  font-family: var(--font-display);
+  font-size: clamp(1.35rem, 4cqi, 2.4rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  text-shadow: 0 0 14px var(--amber-faint);
+}
+
+.home-mark:hover,
+.home-mark:focus-visible {
+  color: var(--bg);
+  background: var(--amber);
+  text-shadow: none;
+}
+
+.home-mark:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 4px;
+}
+
+.page-title {
+  margin: 0;
+  color: var(--amber-dim);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.prose {
+  max-width: 40rem;
+  margin: 0;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: clamp(0.85rem, 1.6vw, 1rem);
+  line-height: 1.65;
+}
+
+.prose p {
+  margin: 0 0 1rem;
+}
+
+.prose code {
+  color: var(--amber);
+}
+
+.route-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.route-list li + li {
+  margin-top: 0.45rem;
+}
+
+.page-status {
+  margin: 0;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+}
+
+.page-status a {
+  color: var(--amber);
+}
+
+.tx-list {
+  display: flex;
+  flex-direction: column;
+  width: min(100%, 56rem);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tx-row {
+  display: grid;
+  grid-template-columns: 11.5rem minmax(7rem, auto) minmax(0, 1fr) auto;
+  gap: 0.35rem 1rem;
+  align-items: baseline;
+  padding: 0.6rem 0.45rem;
+  border-bottom: 1px solid rgba(138, 94, 0, 0.55);
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  text-decoration: none;
+}
+
+.tx-row:hover,
+.tx-row:focus-visible {
+  background: var(--amber);
+  color: var(--bg);
+}
+
+.tx-row:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 2px;
+}
+
+.tx-hash {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 720px) {
+  .tx-row {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .crt-band,
   .power-on {
