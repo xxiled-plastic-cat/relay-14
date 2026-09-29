@@ -1,0 +1,28 @@
+# Relay-14
+
+> Relay-14 is an x402 facilitator for native zkLTC on the LitVM LiteForge testnet.
+
+The payer signs an EIP-1559 transfer and pays their own gas. Relay-14 checks that transaction, broadcasts it, and waits for the receipt. It never holds funds and has no private key.
+
+This is testnet only. The scheme is `exact-native`. The network is `litvm-testnet` (chain id 4441). The asset is zkLTC, the chain's native gas token, with 18 decimals. x402 version 1. Payment headers are `X-PAYMENT` and `X-PAYMENT-RESPONSE`.
+
+## Site
+
+- [Home](https://relay-14.compx.io/): landing page
+- [Docs](https://relay-14.compx.io/docs): short description of the facilitator and its routes
+- [Transactions](https://relay-14.compx.io/txns): settled payments, newest first, each linked to the LiteForge explorer
+
+## Facilitator
+
+Base URL: https://relay-14-facilitator.compx.io
+
+- [GET /supported](https://relay-14-facilitator.compx.io/supported): schemes this facilitator accepts
+- [POST /verify](https://relay-14-facilitator.compx.io/verify): check a signed transfer without broadcasting it
+- [POST /settle](https://relay-14-facilitator.compx.io/settle): broadcast a verified transfer and wait for the receipt
+- [GET /health](https://relay-14-facilitator.compx.io/health): LiteForge RPC and database check
+- [GET /transactions](https://relay-14-facilitator.compx.io/transactions): settled payments, up to 50, newest first
+
+## Network
+
+- [LiteForge explorer](https://liteforge.explorer.caldera.xyz): transaction pages linked from the site
+- [LiteForge RPC](https://liteforge.rpc.caldera.xyz/http): chain id 4441

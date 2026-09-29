@@ -15,6 +15,36 @@ function currentPath(): string {
   return path.length > 0 ? path : "/";
 }
 
+const PAGE_META: Record<string, { title: string; description: string }> = {
+  "/": {
+    title: "Relay-14 — The facilitator for x402 on LitVM",
+    description:
+      "Relay-14 is an x402 facilitator for native zkLTC on the LitVM LiteForge testnet. It verifies and broadcasts the payer's transfer and never holds funds.",
+  },
+  "/docs": {
+    title: "Docs — Relay-14",
+    description:
+      "How Relay-14 verifies and settles exact-native zkLTC payments on LitVM LiteForge testnet.",
+  },
+  "/txns": {
+    title: "Transactions — Relay-14",
+    description: "Settled Relay-14 payments on LitVM LiteForge testnet, each linked to the LiteForge explorer.",
+  },
+};
+
+const NOT_FOUND_META = {
+  title: "Not found — Relay-14",
+  description: "That page is not on this relay.",
+};
+
+function usePageMeta(path: string) {
+  useEffect(() => {
+    const meta = PAGE_META[path] ?? NOT_FOUND_META;
+    document.title = meta.title;
+    document.querySelector('meta[name="description"]')?.setAttribute("content", meta.description);
+  }, [path]);
+}
+
 function useFontsReady(): boolean {
   const [ready, setReady] = useState(false);
 
@@ -85,6 +115,7 @@ export function App() {
   const reduced = useReducedMotion() === true;
   const fontsReady = useFontsReady();
   const path = currentPath();
+  usePageMeta(path);
   const home = path === "/";
   const play = home ? fontsReady : true;
 
