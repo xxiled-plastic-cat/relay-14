@@ -48,8 +48,8 @@ pnpm test
 ## Demo payment
 
 1. Create a testnet wallet and fund it from the faucet at <https://liteforge.hub.caldera.xyz>.
-2. Set `PAY_TO` in [`apps/demo/wrangler.toml`](apps/demo/wrangler.toml) to an address you control, then restart the demo Worker. That address receives the zkLTC. It does not need a key on the server.
-3. Copy [`apps/demo/.dev.vars.example`](apps/demo/.dev.vars.example) to `apps/demo/.dev.vars` and set `PRIVATE_KEY` to the funded wallet. `.dev.vars` is gitignored.
+2. Set `PAY_TO` in [`apps/demo/.env.local`](apps/demo/.env.local) to an address you control, then restart the demo Worker. That address receives the zkLTC. It does not need a key on the server.
+3. Set `PRIVATE_KEY` in `apps/demo/.env.local` to the funded wallet. `.env.local` is gitignored. Wrangler also reads [`apps/relay/.env.local`](apps/relay/.env.local) for `CHAIN_ID`, `RPC_URL`, and `NETWORK`.
 4. With both Workers running:
 
 ```bash
@@ -68,20 +68,20 @@ Log in with `wrangler login`, then create the database from `apps/relay`:
 pnpm --filter @relay-14/relay exec wrangler d1 create relay-14
 ```
 
-Paste the printed `database_id` into [`apps/relay/wrangler.toml`](apps/relay/wrangler.toml), replacing the local placeholder. Apply migrations and deploy:
+Paste the printed `database_id` into [`apps/relay/wrangler.jsonc`](apps/relay/wrangler.jsonc), replacing the local placeholder. Apply migrations and deploy:
 
 ```bash
 pnpm --filter @relay-14/relay db:migrate:remote
 pnpm --filter @relay-14/relay deploy
 ```
 
-Point the demo at the deployed facilitator by setting `FACILITATOR_URL` in [`apps/demo/wrangler.toml`](apps/demo/wrangler.toml) to the `relay-14` Worker URL, set `PAY_TO`, and deploy:
+Point the demo at the deployed facilitator by setting `FACILITATOR_URL` in [`apps/demo/wrangler.jsonc`](apps/demo/wrangler.jsonc) to the `relay-14` Worker URL, set `PAY_TO`, and deploy:
 
 ```bash
 pnpm --filter @relay-14/demo deploy
 ```
 
-Chain settings live in the facilitator `[vars]` block: `CHAIN_ID`, `RPC_URL`, and `NETWORK`. Pointing those at another network later is a config change. The Worker still has no key.
+Chain settings live in the facilitator `vars` block of `wrangler.jsonc`: `CHAIN_ID`, `RPC_URL`, and `NETWORK`. Pointing those at another network later is a config change. The Worker still has no key. Deploy publishes each Worker to `workers.dev`.
 
 ## Out of scope for v1
 

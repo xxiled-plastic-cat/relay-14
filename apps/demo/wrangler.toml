@@ -1,8 +1,0 @@
-name = "relay-14-demo"
-main = "src/index.ts"
-compatibility_date = "2026-09-29"
-compatibility_flags = ["nodejs_compat"]
-
-[vars]
-PAY_TO = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-FACILITATOR_URL = "http://127.0.0.1:8787"

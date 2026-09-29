@@ -5,7 +5,7 @@ import { fetchWithPayment } from "@relay-14/client";
 import { PAYMENT_RESPONSE_HEADER, decodeJsonHeader, explorerTxUrl, type SettleResponse } from "@relay-14/shared";
 import { privateKeyToAccount } from "viem/accounts";
 
-loadDevVars();
+loadLocalEnv();
 
 const privateKey = process.env.PRIVATE_KEY;
 const demoUrl = (process.env.DEMO_URL ?? "http://127.0.0.1:8788").replace(/\/$/, "");
@@ -34,13 +34,24 @@ if (settled?.transaction) {
   console.log(explorerTxUrl(settled.transaction));
 }
 
-function loadDevVars(): void {
-  const path = resolve(dirname(fileURLToPath(import.meta.url)), "../.dev.vars");
-  if (!existsSync(path)) {
-    return;
+function loadLocalEnv(): void {
+  const dir = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  for (const name of [".env.local", ".env", ".dev.vars"]) {
+    const parsed = readEnvFile(resolve(dir, name));
+    for (const [key, value] of Object.entries(parsed)) {
+      if (process.env[key] === undefined) {
+        process.env[key] = value;
+      }
+    }
   }
-  const text = readFileSync(path, "utf8");
-  for (const line of text.split("\n")) {
+}
+
+function readEnvFile(path: string): Record<string, string> {
+  if (!existsSync(path)) {
+    return {};
+  }
+  const parsed: Record<string, string> = {};
+  for (const line of readFileSync(path, "utf8").split("\n")) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith("#")) {
       continue;
@@ -50,9 +61,7 @@ function loadDevVars(): void {
       continue;
     }
     const key = trimmed.slice(0, eq).trim();
-    const value = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
-    if (process.env[key] === undefined) {
-      process.env[key] = value;
-    }
+    parsed[key] = trimmed.slice(eq + 1).trim().replace(/^["']|["']$/g, "");
   }
+  return parsed;
 }
