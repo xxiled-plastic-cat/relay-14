@@ -1,0 +1,19 @@
+{
+  "name": "relay-14",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "pnpm --filter @relay-14/relay test",
+    "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  },
+  "packageManager": "pnpm@10.15.0",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "workerd"]
+  }
+}

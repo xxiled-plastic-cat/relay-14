@@ -1,0 +1,25 @@
+{
+  "name": "@relay-14/relay",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8787",
+    "deploy": "wrangler deploy",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "db:migrate:local": "wrangler d1 migrations apply relay-14 --local",
+    "db:migrate:remote": "wrangler d1 migrations apply relay-14 --remote"
+  },
+  "dependencies": {
+    "@relay-14/shared": "workspace:*",
+    "hono": "^4.6.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260926.1",
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "wrangler": "^4.20.0"
+  }
+}

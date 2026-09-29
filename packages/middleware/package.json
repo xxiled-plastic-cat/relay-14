@@ -1,0 +1,16 @@
+{
+  "name": "@relay-14/middleware",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@relay-14/shared": "workspace:*",
+    "hono": "^4.9.8"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

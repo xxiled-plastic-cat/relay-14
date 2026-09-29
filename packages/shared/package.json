@@ -1,0 +1,15 @@
+{
+  "name": "@relay-14/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "viem": "^2.37.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

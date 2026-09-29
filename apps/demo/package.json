@@ -1,0 +1,25 @@
+{
+  "name": "@relay-14/demo",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --port 8788",
+    "deploy": "wrangler deploy",
+    "pay": "tsx scripts/pay.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@relay-14/client": "workspace:*",
+    "@relay-14/middleware": "workspace:*",
+    "@relay-14/shared": "workspace:*",
+    "hono": "^4.6.0",
+    "viem": "^2.21.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260926.1",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "wrangler": "^4.20.0"
+  }
+}

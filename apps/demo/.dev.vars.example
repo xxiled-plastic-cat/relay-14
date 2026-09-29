@@ -1,0 +1,3 @@
+# Fund a wallet at https://liteforge.hub.caldera.xyz, then:
+PRIVATE_KEY=0x
+DEMO_URL=http://127.0.0.1:8788
