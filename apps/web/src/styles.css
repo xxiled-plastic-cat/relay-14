@@ -1,0 +1,312 @@
+:root {
+  --bg: #0a0805;
+  --amber: #ffb000;
+  --amber-dim: #8a5e00;
+  --amber-faint: rgba(255, 176, 0, 0.28);
+  --glow: rgba(255, 176, 0, 0.45);
+  --font-display: "Sixtyfour Variable", ui-monospace, monospace;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --rail-line: 15px;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--amber);
+  overflow: hidden;
+  font-family: var(--font-mono);
+}
+
+::selection {
+  background: var(--amber);
+  color: var(--bg);
+}
+
+.page {
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  position: relative;
+}
+
+.stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1.4rem, 4vh, 2.75rem);
+  min-width: 0;
+  padding: 6vh 1.5vw 10vh;
+  container-type: inline-size;
+  overflow: visible;
+}
+
+.wordmark {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 11.2cqi, 10.75rem);
+  font-weight: 400;
+  line-height: 0.92;
+  letter-spacing: 0.01em;
+  color: var(--amber);
+  white-space: nowrap;
+  user-select: none;
+}
+
+@property --bled {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 10;
+}
+
+@property --scan {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 0;
+}
+
+.glyph {
+  display: inline-block;
+  cursor: default;
+  transform-origin: center bottom;
+  --bled: 10;
+  --scan: 0;
+  font-variation-settings: "BLED" var(--bled), "SCAN" var(--scan);
+}
+
+.subtitle {
+  margin: 0;
+  min-height: 1.4em;
+  max-width: 100%;
+  padding-inline: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: clamp(0.78rem, 1.55vw, 1.12rem);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--amber);
+  text-shadow: 0 0 10px var(--amber-faint);
+}
+
+.cursor {
+  display: inline-block;
+  width: 0.58em;
+  height: 1.05em;
+  margin-left: 0.18em;
+  background: var(--amber);
+  vertical-align: text-bottom;
+  box-shadow: 0 0 8px var(--glow);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.35rem 1.75rem;
+}
+
+.ascii-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 8.5rem;
+  padding: 0.55rem 0.45rem;
+  border: 0;
+  background: transparent;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  line-height: 1;
+  text-decoration: none;
+  text-transform: uppercase;
+  cursor: pointer;
+  transform-origin: center;
+}
+
+.ascii-btn:visited {
+  color: var(--amber);
+}
+
+.ascii-btn:hover,
+.ascii-btn:focus-visible {
+  background: var(--amber);
+  color: var(--bg);
+  text-shadow: none;
+}
+
+.ascii-btn:focus-visible {
+  outline: 2px solid var(--amber);
+  outline-offset: 5px;
+  box-shadow: 0 0 0 2px var(--bg);
+}
+
+.btn-label {
+  display: inline-block;
+  min-width: 4ch;
+  text-align: center;
+}
+
+.bracket {
+  display: inline-block;
+}
+
+.rail {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  overflow: hidden;
+  padding-inline: 0.4rem;
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: var(--rail-line);
+  user-select: none;
+  pointer-events: none;
+}
+
+.rail-row {
+  height: var(--rail-line);
+  white-space: pre;
+}
+
+.rail-spine {
+  color: var(--amber);
+  text-shadow: 0 0 6px var(--amber-faint);
+}
+
+.rail-dim {
+  color: var(--amber-dim);
+}
+
+.rail-marker {
+  position: absolute;
+  top: 0;
+  color: var(--amber);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1;
+  text-shadow: 0 0 8px var(--glow);
+  pointer-events: none;
+}
+
+.rail-left .rail-marker {
+  right: 0.05rem;
+}
+
+.rail-right .rail-marker {
+  left: 0.05rem;
+}
+
+.crt {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.crt-scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.16) 0px,
+    rgba(0, 0, 0, 0.16) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+.crt-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 42%, rgba(0, 0, 0, 0.58) 100%);
+}
+
+.crt-band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 16%;
+  background: linear-gradient(to bottom, transparent, rgba(255, 176, 0, 0.045), transparent);
+}
+
+.power-on {
+  position: fixed;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+  background: radial-gradient(circle at center, rgba(255, 176, 0, 0.28), transparent 62%);
+}
+
+@media (max-width: 640px) {
+  .stage {
+    justify-content: center;
+    padding: 0 0.4rem;
+    gap: clamp(1.15rem, 3.2vh, 2rem);
+  }
+
+  .wordmark {
+    font-size: clamp(1.05rem, 8cqi, 3.25rem);
+    white-space: nowrap;
+    line-height: 0.92;
+  }
+
+  .subtitle {
+    font-size: clamp(0.68rem, 3vw, 0.95rem);
+    letter-spacing: 0.03em;
+  }
+
+  .actions {
+    flex-wrap: nowrap;
+    gap: 0.55rem 0.85rem;
+  }
+
+  .ascii-btn {
+    min-width: 0;
+    padding: 0.4rem 0.15rem;
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+  }
+
+  .rail {
+    padding-inline: 0.3rem;
+    font-size: 12px;
+  }
+
+  .rail-marker {
+    font-size: 12px;
+  }
+
+  .rail-dim {
+    color: #c4841a;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crt-band,
+  .power-on {
+    display: none;
+  }
+}

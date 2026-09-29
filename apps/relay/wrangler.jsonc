@@ -6,7 +6,7 @@
   "workers_dev": true,
   "routes": [
     {
-      "pattern": "relay-14.compx.io",
+      "pattern": "relay-14-facilitator.compx.io",
       "custom_domain": true
     }
   ],

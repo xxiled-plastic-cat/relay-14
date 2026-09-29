@@ -1,0 +1,9 @@
+{
+  "name": "relay-14-web",
+  "compatibility_date": "2026-09-29",
+  "workers_dev": true,
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}

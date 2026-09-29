@@ -10,6 +10,7 @@ The payment scheme is `exact-native` on network `litvm-testnet` (chain id 4441).
 | --- | --- | --- |
 | `apps/relay` | Worker `relay-14`, package `@relay-14/relay` | Facilitator: `/supported`, `/verify`, `/settle`, `/health` |
 | `apps/demo` | Worker `relay-14-demo`, package `@relay-14/demo` | Paid `GET /fortune` for 0.0001 zkLTC |
+| `apps/web` | `@relay-14/web` | Landing page |
 | `packages/shared` | `@relay-14/shared` | Chain config, payment types, header codec |
 | `packages/client` | `@relay-14/client` | Signs a transfer and retries once after a 402 |
 | `packages/middleware` | `@relay-14/middleware` | Hono middleware that returns 402 and calls Relay-14 |
@@ -38,6 +39,14 @@ pnpm --filter @relay-14/demo dev
 ```
 
 The demo listens on `http://127.0.0.1:8788`. `GET /fortune` returns 402 until the request carries an `X-PAYMENT` header. `GET /health` on each Worker does not require payment. The facilitator health check calls the LiteForge RPC and `SELECT 1` on D1.
+
+The landing page is a separate Vite app:
+
+```bash
+pnpm --filter @relay-14/web dev
+```
+
+It serves at `http://127.0.0.1:5173`.
 
 Run the verify tests:
 
@@ -81,7 +90,7 @@ Point the demo at the deployed facilitator by setting `FACILITATOR_URL` in [`app
 pnpm --filter @relay-14/demo deploy
 ```
 
-Chain settings live in the facilitator `vars` block of `wrangler.jsonc`: `CHAIN_ID`, `RPC_URL`, and `NETWORK`. Pointing those at another network later is a config change. The Worker still has no key. Deploy publishes the facilitator to `relay-14.compx.io` and to `workers.dev`.
+Chain settings live in the facilitator `vars` block of `wrangler.jsonc`: `CHAIN_ID`, `RPC_URL`, and `NETWORK`. Pointing those at another network later is a config change. The Worker still has no key. Deploy publishes the facilitator to `relay-14-facilitator.compx.io` and to `workers.dev`.
 
 ## Out of scope for v1
 
