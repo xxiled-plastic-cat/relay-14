@@ -4,7 +4,7 @@
 
 The payer signs an EIP-1559 transfer and pays their own gas. Relay-14 checks that transaction, broadcasts it, and waits for the receipt. It never holds funds and has no private key.
 
-This is testnet only. The scheme is `exact-native`. The network is `litvm-testnet` (chain id 4441). The asset is zkLTC, the chain's native gas token, with 18 decimals. x402 version 1. Payment headers are `X-PAYMENT` and `X-PAYMENT-RESPONSE`.
+This is testnet only. The scheme is `exact-native`. The network is `litvm-testnet` (chain id 4441). The asset is zkLTC, the chain's native gas token, with 18 decimals. x402 version 1. Payment headers are `X-PAYMENT` and `X-PAYMENT-RESPONSE`. The facilitator waits 30 seconds for a receipt. `maxTimeoutSeconds` must not be higher than 30.
 
 ## Site
 

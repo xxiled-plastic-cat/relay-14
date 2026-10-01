@@ -11,7 +11,8 @@ export function DocsPage() {
         </p>
         <p>
           Scheme <code>exact-native</code>. Network <code>litvm-testnet</code>. Asset zkLTC, 18
-          decimals.
+          decimals. The facilitator waits 30 seconds for a receipt. A payment requirement must not
+          ask for longer.
         </p>
         <p>
           Facilitator{" "}

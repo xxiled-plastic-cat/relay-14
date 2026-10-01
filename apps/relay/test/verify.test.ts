@@ -1,4 +1,4 @@
-import { decodeJsonHeader, encodeJsonHeader, InvalidReason, NETWORK } from "@relay-14/shared";
+import { decodeJsonHeader, encodeJsonHeader, InvalidReason, NETWORK, RECEIPT_TIMEOUT_SECONDS } from "@relay-14/shared";
 import { getAddress, keccak256 } from "viem";
 import { describe, expect, test } from "vitest";
 import { verifyExactNativePayment } from "../src/verify.js";
@@ -81,6 +81,26 @@ describe("verify exact-native", () => {
     expect(result.invalidReason).toBe(InvalidReason.InsufficientValue);
   });
 
+  test("rejects a transfer over by 1 wei", async () => {
+    const signedTx = await signTransfer({ value: VALUE + 1n });
+    const { result, store } = await verifySigned(signedTx);
+
+    expect(result.isValid).toBe(false);
+    expect(result.invalidReason).toBe(InvalidReason.Overpayment);
+    expect(store.rows.size).toBe(0);
+  });
+
+  test("rejects a requirement that asks to wait longer than the facilitator", async () => {
+    const signedTx = await signTransfer();
+    const { result, store } = await verifySigned(signedTx, {
+      requirements: paymentRequirements({ maxTimeoutSeconds: RECEIPT_TIMEOUT_SECONDS + 1 }),
+    });
+
+    expect(result.isValid).toBe(false);
+    expect(result.invalidReason).toBe(InvalidReason.InvalidTimeout);
+    expect(store.rows.size).toBe(0);
+  });
+
   test("rejects calldata", async () => {
     const signedTx = await signTransfer({ data: "0xabcd" });
     const { result } = await verifySigned(signedTx);
@@ -131,6 +151,29 @@ describe("verify exact-native", () => {
     expect(store.rows.get(hash)?.status).toBe("settled");
   });
 
+  test("leaves a settling row in place", async () => {
+    const signedTx = await signTransfer();
+    const hash = keccak256(signedTx);
+    const store = createMemoryPaymentStore();
+    store.rows.set(hash, {
+      txHash: hash,
+      payer: getAddress(account.address),
+      payTo: getAddress(PAY_TO),
+      amountWei: VALUE.toString(),
+      resource: "https://relay-14.example/fortune",
+      status: "settling",
+      error: null,
+      createdAt: "2026-09-29T00:00:00.000Z",
+      settledAt: null,
+      blockNumber: null,
+    });
+
+    const { result } = await verifySigned(signedTx, { store });
+
+    expect(result.isValid).toBe(true);
+    expect(store.rows.get(hash)?.status).toBe("settling");
+  });
+
   test("refreshes a verified row so settle can re-run verify", async () => {
     const signedTx = await signTransfer();
     const store = createMemoryPaymentStore();
@@ -140,7 +183,62 @@ describe("verify exact-native", () => {
     expect(first.result.isValid).toBe(true);
     expect(second.result.isValid).toBe(true);
     expect(store.rows.size).toBe(1);
-    expect([...store.rows.values()][0]?.status).toBe("verified");
+    const row = [...store.rows.values()][0];
+    expect(row?.status).toBe("verified");
+    expect(row?.resource).toBe("https://relay-14.example/fortune");
+    expect(row?.payTo).toBe(getAddress(PAY_TO));
+    expect(row?.amountWei).toBe(VALUE.toString());
+  });
+
+  test("rejects a later verify that names a different resource", async () => {
+    const signedTx = await signTransfer();
+    const hash = keccak256(signedTx);
+    const store = createMemoryPaymentStore();
+    const first = await verifySigned(signedTx, { store });
+    const second = await verifySigned(signedTx, {
+      store,
+      requirements: paymentRequirements({ resource: "https://relay-14.example/cheap" }),
+    });
+
+    expect(first.result.isValid).toBe(true);
+    expect(second.result.isValid).toBe(false);
+    expect(second.result.invalidReason).toBe(InvalidReason.RequirementsMismatch);
+    expect(second.result.payer).toBe(getAddress(account.address));
+    expect(store.rows.get(hash)).toMatchObject({
+      status: "verified",
+      resource: "https://relay-14.example/fortune",
+      payTo: getAddress(PAY_TO),
+      amountWei: VALUE.toString(),
+    });
+  });
+
+  test("does not retarget payTo or amount on a later verify", async () => {
+    const signedTx = await signTransfer();
+    const hash = keccak256(signedTx);
+    const store = createMemoryPaymentStore();
+    store.rows.set(hash, {
+      txHash: hash,
+      payer: getAddress(account.address),
+      payTo: getAddress(OTHER),
+      amountWei: "1",
+      resource: "https://relay-14.example/fortune",
+      status: "verified",
+      error: null,
+      createdAt: "2026-09-29T00:00:00.000Z",
+      settledAt: null,
+      blockNumber: null,
+    });
+
+    const { result } = await verifySigned(signedTx, { store });
+
+    expect(result.isValid).toBe(false);
+    expect(result.invalidReason).toBe(InvalidReason.RequirementsMismatch);
+    expect(store.rows.get(hash)).toMatchObject({
+      status: "verified",
+      payTo: getAddress(OTHER),
+      amountWei: "1",
+      resource: "https://relay-14.example/fortune",
+    });
   });
 
   test("roundtrips the X-PAYMENT header codec", () => {

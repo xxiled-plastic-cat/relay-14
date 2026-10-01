@@ -11,6 +11,10 @@
     "hono": "^4.9.8"
   },
   "scripts": {
+    "test": "vitest run",
     "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.0"
   }
 }

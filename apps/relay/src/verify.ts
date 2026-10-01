@@ -1,5 +1,6 @@
 import {
   InvalidReason,
+  RECEIPT_TIMEOUT_SECONDS,
   SCHEME,
   X402_VERSION,
   type VerifyResponse,
@@ -15,7 +16,7 @@ import {
   type Hex,
   type TransactionSerialized,
 } from "viem";
-import { type ChainReader, type PaymentStore, type VerifiedPayment } from "./store.js";
+import { type ChainReader, type PaymentRow, type PaymentStore, type VerifiedPayment } from "./store.js";
 
 export type VerifyInput = {
   paymentPayload: unknown;
@@ -59,8 +60,8 @@ export async function verifyExactNativePayment(input: VerifyInput): Promise<Veri
   }
 
   const value = tx.value ?? 0n;
-  if (value < envelope.maxAmountRequired) {
-    return invalid(InvalidReason.InsufficientValue);
+  if (value !== envelope.maxAmountRequired) {
+    return invalid(value < envelope.maxAmountRequired ? InvalidReason.InsufficientValue : InvalidReason.Overpayment);
   }
 
   if (!isEmptyCalldata(tx.data)) {
@@ -100,11 +101,6 @@ export async function verifyExactNativePayment(input: VerifyInput): Promise<Veri
 
   const txHash = keccak256(envelope.signedTx);
   const existing = await input.store.findByHash(txHash);
-  // A settled row is a replay. A verified or failed row can be checked again so settle can re-run verify.
-  if (existing?.status === "settled") {
-    return invalid(InvalidReason.ReplayDetected, payer);
-  }
-
   const row: VerifiedPayment = {
     txHash,
     payer,
@@ -113,10 +109,9 @@ export async function verifyExactNativePayment(input: VerifyInput): Promise<Veri
     resource: envelope.resource,
     createdAt: (input.now ?? isoNow)(),
   };
-  if (existing) {
-    await input.store.refreshVerified(row);
-  } else {
-    await input.store.insertVerified(row);
+  const stored = await rememberVerified(input.store, existing, row);
+  if (stored) {
+    return stored;
   }
 
   return { isValid: true, payer };
@@ -159,6 +154,16 @@ function readEnvelope(
   if (typeof paymentRequirements.resource !== "string" || paymentRequirements.resource.length === 0) {
     return invalid(InvalidReason.InvalidPayload);
   }
+  if (
+    typeof paymentRequirements.maxTimeoutSeconds !== "number" ||
+    !Number.isInteger(paymentRequirements.maxTimeoutSeconds) ||
+    paymentRequirements.maxTimeoutSeconds < 1
+  ) {
+    return invalid(InvalidReason.InvalidPayload);
+  }
+  if (paymentRequirements.maxTimeoutSeconds > RECEIPT_TIMEOUT_SECONDS) {
+    return invalid(InvalidReason.InvalidTimeout);
+  }
 
   return {
     signedTx: payload.signedTx as Hex,
@@ -166,6 +171,55 @@ function readEnvelope(
     maxAmountRequired: BigInt(paymentRequirements.maxAmountRequired),
     resource: paymentRequirements.resource,
   };
+}
+
+async function rememberVerified(
+  store: PaymentStore,
+  existing: PaymentRow | null,
+  row: VerifiedPayment,
+): Promise<VerifyResponse | null> {
+  let current = existing;
+  if (!current) {
+    try {
+      await store.insertVerified(row);
+      return null;
+    } catch (error) {
+      if (!isUniqueConstraint(error)) {
+        throw error;
+      }
+      current = await store.findByHash(row.txHash);
+      if (!current) {
+        throw error;
+      }
+    }
+  }
+
+  // The first successful verify locks resource, payTo, and amount. A later call cannot retarget them.
+  if (!sameBoundRequirements(current, row)) {
+    return invalid(InvalidReason.RequirementsMismatch, row.payer);
+  }
+  // Same requirements on an already settled payment. Settle turns this into the stored success.
+  if (current.status === "settled") {
+    return invalid(InvalidReason.ReplayDetected, row.payer);
+  }
+  // Leave a settling row alone so the broadcaster keeps the lease. Only a failed row returns to verified.
+  if (current.status === "failed") {
+    await store.refreshVerified(row);
+  }
+  return null;
+}
+
+function sameBoundRequirements(existing: PaymentRow, row: VerifiedPayment): boolean {
+  return (
+    existing.resource === row.resource &&
+    existing.payTo === row.payTo &&
+    existing.amountWei === row.amountWei
+  );
+}
+
+function isUniqueConstraint(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /unique constraint failed/i.test(message);
 }
 
 function isEmptyCalldata(data: Hex | undefined): boolean {

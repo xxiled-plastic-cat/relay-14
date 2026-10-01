@@ -1,4 +1,4 @@
-import { InvalidReason, SCHEME, X402_VERSION } from "@relay-14/shared";
+import { InvalidReason, RECEIPT_TIMEOUT_SECONDS, SCHEME, X402_VERSION } from "@relay-14/shared";
 import { Hono } from "hono";
 import { createRelay14PublicClient, createViemChainReader } from "./chain.js";
 import { createViemSettlementClient, settleExactNativePayment } from "./settle.js";
@@ -26,6 +26,7 @@ app.get("/supported", (c) => {
       x402Version: X402_VERSION,
       scheme: SCHEME,
       network: c.env.NETWORK,
+      maxTimeoutSeconds: RECEIPT_TIMEOUT_SECONDS,
     },
   ]);
 });

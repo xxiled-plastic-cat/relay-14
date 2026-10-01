@@ -31,7 +31,6 @@ app.get(
       facilitatorUrl: c.env.FACILITATOR_URL,
       description: "A fortune from Relay-14",
       mimeType: "application/json",
-      maxTimeoutSeconds: 60,
     })(c, next),
   (c) => {
     const index = Math.floor(Math.random() * FORTUNES.length);
