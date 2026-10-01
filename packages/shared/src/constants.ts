@@ -12,6 +12,9 @@ export const EXPLORER_URL = "https://liteforge.explorer.caldera.xyz";
 export const PAYMENT_HEADER = "X-PAYMENT";
 export const PAYMENT_RESPONSE_HEADER = "X-PAYMENT-RESPONSE";
 
+/** How long `/settle` waits for a receipt. A requirement may not ask for longer. */
+export const RECEIPT_TIMEOUT_SECONDS = 30;
+
 export const InvalidReason = {
   InvalidPayload: "invalid_payload",
   InvalidScheme: "invalid_scheme",
@@ -19,9 +22,12 @@ export const InvalidReason = {
   InvalidVersion: "invalid_x402_version",
   InvalidRecipient: "invalid_recipient",
   InsufficientValue: "insufficient_value",
+  Overpayment: "overpayment",
   InvalidNonce: "invalid_nonce",
   InsufficientFunds: "insufficient_funds",
   ReplayDetected: "replay_detected",
+  RequirementsMismatch: "requirements_mismatch",
+  InvalidTimeout: "invalid_timeout",
   UnexpectedVerifyError: "unexpected_verify_error",
 } as const;
 
@@ -29,6 +35,7 @@ export type InvalidReason = (typeof InvalidReason)[keyof typeof InvalidReason];
 
 export const SettleErrorReason = {
   ConfirmationTimedOut: "confirmation_timed_out",
+  SettlementInProgress: "settlement_in_progress",
   TransactionFailed: "transaction_failed",
   UnexpectedSettleError: "unexpected_settle_error",
 } as const;

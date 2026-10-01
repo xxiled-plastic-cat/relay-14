@@ -1,8 +1,10 @@
 import type { MiddlewareHandler } from "hono";
 import {
   InvalidReason,
+  SettleErrorReason,
   NATIVE_ASSET,
   NETWORK,
+  RECEIPT_TIMEOUT_SECONDS,
   PAYMENT_HEADER,
   PAYMENT_RESPONSE_HEADER,
   SCHEME,
@@ -50,7 +52,10 @@ export function paymentMiddleware(options: PaymentMiddlewareOptions): Middleware
       });
       if (!verified.ok || !verified.body?.isValid) {
         const reason = verified.body?.invalidReason ?? InvalidReason.UnexpectedVerifyError;
-        return c.json(paymentRequired(requirements, reason), 402);
+        // A settled replay still goes to /settle, which returns the stored success.
+        if (reason !== InvalidReason.ReplayDetected) {
+          return c.json(paymentRequired(requirements, reason), 402);
+        }
       }
 
       settled = await postJson<SettleResponse>(`${facilitator}/settle`, {
@@ -63,6 +68,9 @@ export function paymentMiddleware(options: PaymentMiddlewareOptions): Middleware
 
     if (!settled.ok || !settled.body?.success) {
       const reason = settled.body?.errorReason ?? "unexpected_settle_error";
+      if (isInFlightReason(reason)) {
+        return c.json({ error: reason, transaction: settled.body?.transaction }, 503);
+      }
       return c.json(paymentRequired(requirements, reason), 402);
     }
 
@@ -80,9 +88,22 @@ function buildRequirements(options: PaymentMiddlewareOptions, resource: string):
     description: options.description,
     mimeType: options.mimeType ?? "application/json",
     payTo: options.payTo,
-    maxTimeoutSeconds: options.maxTimeoutSeconds ?? 60,
+    maxTimeoutSeconds: clampTimeout(options.maxTimeoutSeconds),
     asset: NATIVE_ASSET,
   };
+}
+
+function clampTimeout(requested: number | undefined): number {
+  if (requested === undefined || !Number.isInteger(requested) || requested < 1) {
+    return RECEIPT_TIMEOUT_SECONDS;
+  }
+  return Math.min(requested, RECEIPT_TIMEOUT_SECONDS);
+}
+
+function isInFlightReason(reason: string): boolean {
+  return (
+    reason === SettleErrorReason.ConfirmationTimedOut || reason === SettleErrorReason.SettlementInProgress
+  );
 }
 
 function paymentRequired(requirements: PaymentRequirements, error?: string) {

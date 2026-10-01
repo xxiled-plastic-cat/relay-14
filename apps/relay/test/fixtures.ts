@@ -1,4 +1,11 @@
-import { NATIVE_ASSET, NETWORK, SCHEME, type PaymentPayload, type PaymentRequirements } from "@relay-14/shared";
+import {
+  NATIVE_ASSET,
+  NETWORK,
+  RECEIPT_TIMEOUT_SECONDS,
+  SCHEME,
+  type PaymentPayload,
+  type PaymentRequirements,
+} from "@relay-14/shared";
 import { privateKeyToAccount } from "viem/accounts";
 import { type Address, type Hex } from "viem";
 import { type PaymentRow, type PaymentStore } from "../src/store.js";
@@ -56,7 +63,7 @@ export function paymentRequirements(overrides: Partial<PaymentRequirements> = {}
     description: "A fortune from Relay-14",
     mimeType: "application/json",
     payTo: PAY_TO.toLowerCase(),
-    maxTimeoutSeconds: 60,
+    maxTimeoutSeconds: RECEIPT_TIMEOUT_SECONDS,
     asset: NATIVE_ASSET,
     ...overrides,
   };
@@ -70,6 +77,9 @@ export function createMemoryPaymentStore(): PaymentStore & { rows: Map<string, P
       return rows.get(txHash) ?? null;
     },
     async insertVerified(row) {
+      if (rows.has(row.txHash)) {
+        throw new Error("UNIQUE constraint failed: payments.tx_hash");
+      }
       rows.set(row.txHash, {
         ...row,
         status: "verified",
@@ -80,22 +90,26 @@ export function createMemoryPaymentStore(): PaymentStore & { rows: Map<string, P
     },
     async refreshVerified(row) {
       const existing = rows.get(row.txHash);
-      if (!existing || existing.status === "settled") {
+      if (!existing || existing.status !== "failed") {
         return;
       }
       rows.set(row.txHash, {
         ...existing,
-        payer: row.payer,
-        payTo: row.payTo,
-        amountWei: row.amountWei,
-        resource: row.resource,
         status: "verified",
         error: null,
       });
     },
+    async claimSettling(txHash) {
+      const existing = rows.get(txHash);
+      if (!existing || existing.status !== "verified") {
+        return false;
+      }
+      rows.set(txHash, { ...existing, status: "settling", error: null });
+      return true;
+    },
     async markSettled(txHash, blockNumber, settledAt) {
       const existing = rows.get(txHash);
-      if (!existing || existing.status === "settled") {
+      if (!existing || existing.status !== "settling") {
         return;
       }
       rows.set(txHash, {
@@ -108,7 +122,7 @@ export function createMemoryPaymentStore(): PaymentStore & { rows: Map<string, P
     },
     async markFailed(txHash, error) {
       const existing = rows.get(txHash);
-      if (!existing || existing.status === "settled") {
+      if (!existing || existing.status !== "settling") {
         return;
       }
       rows.set(txHash, {

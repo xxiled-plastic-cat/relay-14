@@ -61,4 +61,6 @@ export type SupportedPaymentKind = {
   x402Version: typeof X402_VERSION;
   scheme: typeof SCHEME;
   network: string;
+  /** Receipt wait, in seconds. Requirements may not ask for longer. */
+  maxTimeoutSeconds: number;
 };

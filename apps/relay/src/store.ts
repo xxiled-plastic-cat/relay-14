@@ -1,4 +1,4 @@
-export type PaymentStatus = "verified" | "settled" | "failed";
+export type PaymentStatus = "verified" | "settling" | "settled" | "failed";
 
 export type PaymentRow = {
   txHash: string;
@@ -26,6 +26,8 @@ export interface PaymentStore {
   findByHash(txHash: string): Promise<PaymentRow | null>;
   insertVerified(row: VerifiedPayment): Promise<void>;
   refreshVerified(row: VerifiedPayment): Promise<void>;
+  /** Moves `verified` → `settling`. Only the caller that gets `true` may broadcast. */
+  claimSettling(txHash: string): Promise<boolean>;
   markSettled(txHash: string, blockNumber: number, settledAt: string): Promise<void>;
   markFailed(txHash: string, error: string): Promise<void>;
 }
@@ -40,7 +42,7 @@ type SqlValue = string | number | null;
 type BoundStatement = {
   first<T>(): Promise<T | null>;
   all<T>(): Promise<{ results: T[] }>;
-  run(): Promise<unknown>;
+  run(): Promise<{ meta?: { changes?: number } }>;
 };
 
 /** Structural slice of D1 used by the relay-14 Worker. */
@@ -87,14 +89,27 @@ export function createD1PaymentStore(db: RelayDatabase): PaymentStore {
     },
 
     async refreshVerified(row) {
+      // Resource, recipient, and amount stay as first verified. Only a failed row can return to verified.
       await db
         .prepare(
           `UPDATE payments
-           SET payer = ?, pay_to = ?, amount_wei = ?, resource = ?, status = 'verified', error = NULL
-           WHERE tx_hash = ? AND status != 'settled'`,
+           SET status = 'verified', error = NULL
+           WHERE tx_hash = ? AND status = 'failed'`,
         )
-        .bind(row.payer, row.payTo, row.amountWei, row.resource, row.txHash)
+        .bind(row.txHash)
         .run();
+    },
+
+    async claimSettling(txHash) {
+      const result = await db
+        .prepare(
+          `UPDATE payments
+           SET status = 'settling', error = NULL
+           WHERE tx_hash = ? AND status = 'verified'`,
+        )
+        .bind(txHash)
+        .run();
+      return (result.meta?.changes ?? 0) === 1;
     },
 
     async markSettled(txHash, blockNumber, settledAt) {
@@ -102,7 +117,7 @@ export function createD1PaymentStore(db: RelayDatabase): PaymentStore {
         .prepare(
           `UPDATE payments
            SET status = 'settled', settled_at = ?, block_number = ?, error = NULL
-           WHERE tx_hash = ? AND status != 'settled'`,
+           WHERE tx_hash = ? AND status = 'settling'`,
         )
         .bind(settledAt, blockNumber, txHash)
         .run();
@@ -113,7 +128,7 @@ export function createD1PaymentStore(db: RelayDatabase): PaymentStore {
         .prepare(
           `UPDATE payments
            SET status = 'failed', error = ?
-           WHERE tx_hash = ? AND status != 'settled'`,
+           WHERE tx_hash = ? AND status = 'settling'`,
         )
         .bind(error, txHash)
         .run();
