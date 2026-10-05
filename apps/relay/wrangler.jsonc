@@ -4,6 +4,9 @@
   "compatibility_date": "2026-09-29",
   "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
+  "triggers": {
+    "crons": ["15 * * * *"]
+  },
   "routes": [
     {
       "pattern": "relay-14-facilitator.compx.io",
@@ -13,7 +16,8 @@
   "vars": {
     "CHAIN_ID": "4441",
     "RPC_URL": "https://liteforge.rpc.caldera.xyz/http",
-    "NETWORK": "litvm-testnet"
+    "NETWORK": "litvm-testnet",
+    "NF_STATS_URL": "https://nf-stats-upload.kierantnelson.workers.dev/upload/relay-14"
   },
   "d1_databases": [
     {
