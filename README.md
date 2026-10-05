@@ -84,6 +84,14 @@ pnpm --filter @relay-14/relay db:migrate:remote
 pnpm --filter @relay-14/relay deploy
 ```
 
+Deploy publishes the Worker, then uploads public stats. A cron at `15 * * * *` uploads again each hour. From `apps/relay`, set the Worker secret the cron reads:
+
+```bash
+pnpm exec wrangler secret put NF_STATS_TOKEN
+```
+
+The post-deploy upload runs on your machine. Copy [`apps/relay/.env.example`](apps/relay/.env.example) to `apps/relay/.env` and set `NF_STATS_URL` and `NF_STATS_TOKEN`. Do not commit `.env`. `pnpm stats:dry` prints the JSON and does not upload.
+
 Point the demo at the deployed facilitator by setting `FACILITATOR_URL` in [`apps/demo/wrangler.jsonc`](apps/demo/wrangler.jsonc) to the `relay-14` Worker URL, set `PAY_TO`, and deploy:
 
 ```bash

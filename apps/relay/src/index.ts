@@ -2,6 +2,7 @@ import { InvalidReason, RECEIPT_TIMEOUT_SECONDS, SCHEME, X402_VERSION } from "@r
 import { Hono } from "hono";
 import { createRelay14PublicClient, createViemChainReader } from "./chain.js";
 import { createViemSettlementClient, settleExactNativePayment } from "./settle.js";
+import { publishRelayStats } from "./stats.js";
 import { createD1PaymentStore, listSettledPayments, type RelayDatabase } from "./store.js";
 import { verifyExactNativePayment } from "./verify.js";
 
@@ -10,6 +11,8 @@ export type Relay14Env = {
   CHAIN_ID: string;
   RPC_URL: string;
   NETWORK: string;
+  NF_STATS_URL?: string;
+  NF_STATS_TOKEN?: string;
 };
 
 const app = new Hono<{ Bindings: Relay14Env }>();
@@ -155,4 +158,10 @@ async function readPaymentBody(
   };
 }
 
-export default app;
+export default {
+  fetch: app.fetch,
+  async scheduled(controller: ScheduledController, env: Relay14Env, ctx: ExecutionContext) {
+    controller.noRetry();
+    ctx.waitUntil(publishRelayStats(env));
+  },
+};

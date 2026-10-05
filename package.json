@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "test": "pnpm -r --if-present test",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "stats:dry": "pnpm --filter @relay-14/relay stats:dry"
   },
   "engines": {
     "node": ">=20"
